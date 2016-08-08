@@ -1,0 +1,59 @@
+﻿param (
+    [parameter( Mandatory = $true)]
+    [alias("InputObject", "VirtualMachine")]
+    [int]$vlanid,
+    [int]$vrfid,
+    [string]$switchname
+)
+## USE
+## .\generate-vrf-config.ps1 -vrfid 5 -vlanid 280
+## vrfid = the vrf number 
+## vlanid = the vlan range starting number
+## switchname = vmsw1 or vmsw2
+
+
+$a = 0
+$ip = 200
+switch ($switchname)
+    {
+     vmsw1 {$switchip = 201}
+     vmsw2 {$switchip = 202}   
+    }
+
+while($a -le 11) {
+
+$desc = @(
+"VRF$vrfid-dvSwitch/VRF$vrfid-Mission-$vlanid",
+"VRF$vrfid-OOBM dvSwitch/VRF$vrfid-OOBM",
+"VRF$vrfid-VSAN dvSwitch/VRF$vrfid-VMKernel-VSAN-$vlanid",
+"VRF$vrfid–dvSwitch/VRF$vrfid-VMkernel-vMotion-$vlanid",
+"VRF$vrfid–dvSwitch/VRF$vrfid-VMkernel-Mgmt-$vlanid",
+"VRF$vrfid–dvSwitch/VRF$vrfid-DMZ-$vlanid",
+"VRF$vrfid–dvSwitch/VRF$vrfid-Printers-$vlanid",
+"VRF$vrfid-dvSwitch/VRF$vrfid-DB-Private-$vlanid",
+"VRF$vrfid-dvSwitch/VRF$vrfid-DPS-Private-$vlanid",
+"VRF$vrfid-dvSwitch/VRF$vrfid-SCG-Private-$vlanid",
+"VRF$vrfid-dvSwitch/VRF$vrfid-SCG-Private-$vlanid",
+"VRF$vrfid-dvSwitch/VRF$vrfid-SCG-Private-$vlanid"
+)
+$vlanname = @(
+"Mission",
+"OOBM",
+"VMKernel-VSAN",
+"VMKernel-vMotion",
+"VMkernel-Mgmt",
+"DMZ",
+"Printers",
+"DB-Private",
+"DPS-Private",
+"SCG-Private-CIP1",
+"SCG-Private-CIP2",
+"SCG-Private-CIP3"
+)
+
+write-host ("int vlan {0} `r`n vrf member {1} `r`n desc {4} `r`n ip address 192.168.{3}.{5}/24 `r`n no shut `r`n hsrp version 2 `r`n hsrp {0} `r`n ip 192.168.{3}.32 `r`n vlan {0} `r`n name VRF{1}-{2} `r`n"  -f $vlanid, $vrfid, $vlanname[$a], $ip, $desc[$a], $switchip)
+
+$ip++
+$vlanid++
+$a++
+}

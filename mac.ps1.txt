@@ -1,0 +1,61 @@
+﻿# calling script with no parameters finds duplicate Mac addresses 
+# calling script with -macaddress finds the vm associated with the mac addess
+#
+###################################################################################################################################################
+#
+# PS C:\> .\mac.ps1 -macaddress 00:50:56:84:f6:45
+#
+# NetworkName                                              AdaptorName                                              Name                                                     MacAddress                                              
+# -----------                                              -----------                                              ----                                                     ----------                                              
+# NewDevNet-VM Network-100                                 Network adapter 1                                        proto-dcervera-server                                    00:50:56:84:f6:45                                       
+#
+#
+#
+# PS C:\>
+#
+###################################################################################################################################################
+#
+# PS C:\Users\Jeun5498\Documents\VMWare\vmware-scripts> .\mac.ps1
+#
+# Name              Count
+# ----              -----
+# 00:0c:29:89:b0:ad     2
+#
+#
+#
+# PS C:\Users\Jeun5498\Documents\VMWare\vmware-scripts> 
+#
+####################################################################################################################################################
+
+param (
+   #[parameter( Mandatory = $true)]
+   #[string]$macaddress
+   [parameter(parametersetname="Mac-address")]
+   [string]$macaddress
+
+)
+
+
+if($macaddress){
+$vms = get-vm 
+    foreach ($vm in $vms) {
+     $adaptors = $vm | Get-NetworkAdapter
+        foreach ($adaptor in $adaptors){ 
+            if ($adaptor.MacAddress -eq $macaddress){
+                $VMProp = @{
+                        Name = get-vm -id $adaptor.ParentId | select -ExpandProperty Name
+                        NetworkName = $adaptor.NetworkName
+                        AdaptorName = $adaptor.Name
+                        MacAddress = $adaptor.MacAddress
+                }
+                New-Object psobject -Property $VMProp
+
+            }
+
+        } 
+    }
+}
+else {
+$mac = (get-vm | Get-NetworkAdapter).MacAddress 
+$mac | group | Where-Object {$_.count -eq 1} | select Name, Count | ft -AutoSize
+}
